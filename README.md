@@ -43,7 +43,7 @@ logger.debug("View loaded", metadata: ["time": 0.5])
 
 | Package | Role |
 | :--- | :--- |
-| [**Canvas**](../Canvas/README.md) | The App |
+| [**Canvas**](https://github.com/InfiniteEvolution/Canvas) | The App |
 | [**DataCollector**](../DataCollector/README.md) | The Senses |
 | [**Trainer**](../Trainer/README.md) | The Brain |
 | [**Store**](../Store/README.md) | The Memory |
