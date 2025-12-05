@@ -44,9 +44,9 @@ logger.debug("View loaded", metadata: ["time": 0.5])
 | Package | Role |
 | :--- | :--- |
 | [**Canvas**](https://github.com/InfiniteEvolution/Canvas) | The App |
-| [**DataCollector**](../DataCollector/README.md) | The Senses |
-| [**Trainer**](../Trainer/README.md) | The Brain |
-| [**Store**](../Store/README.md) | The Memory |
+| [**DataCollector**](https://github.com/InfiniteEvolution/DataCollector) | The Senses |
+| [**Trainer**](https://github.com/InfiniteEvolution/Trainer) | The Brain |
+| [**Store**](https://github.com/InfiniteEvolution/Store) | The Memory |
 | **Logger** *(You Are Here)* | The Console |
 
 ---
