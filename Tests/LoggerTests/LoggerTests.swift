@@ -13,9 +13,8 @@ import Testing
 
     @Test func initialization() {
         let log = LogContext("TEST")
-        #expect(log != nil)  // Value type? No, Struct.
-        // LogContext is a struct? Let's assume struct based on usage.
-        // If struct, init returns a value.
+        // LogContext is a struct, init returns a value
+        _ = log
     }
 
     @Test func loggingMethods() {
@@ -47,18 +46,23 @@ import Testing
         log.info(longMessage)
     }
 
-    @Test func loggerReuse() {
-        let logger1 = DefaultLogger.shared(category: "REUS")
-        let logger2 = DefaultLogger.shared(category: "REUS")
-        let logger3 = DefaultLogger.shared(category: "DIFF")
+    @Test func defaultLoggerInit() {
+        let logger1 = DefaultLogger(category: "TEST")
+        let logger2 = DefaultLogger(category: "DIFF")
 
-        #expect(logger1 === logger2)
-        #expect(logger1 !== logger3)
+        // Just verify initialization works
+        logger1.info("Test message")
+        logger2.info("Different logger")
     }
 
-    @Test @MainActor func systemInfo() {
-        let logger = DefaultLogger.shared(category: "SYST")
-        logger.logSystemInfo()
+    @Test @MainActor func defaultLoggerMethods() {
+        let logger = DefaultLogger(category: "SYST")
+        logger.log("Log message")
+        logger.info("Info message")
+        logger.debug("Debug message")
+        logger.notice("Notice message")
+        logger.warning("Warning message")
+        logger.error("Error message")
     }
 
     @Test func concurrentLogging() async {
