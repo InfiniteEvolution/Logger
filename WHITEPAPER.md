@@ -32,12 +32,12 @@ A struct that captures the "Context" of a log source.
 -   **Levels**: `debug`, `info`, `warning`, `error`, `fault`.
 
 ### 4.2. Privacy Rules
--   **Public**: Static strings, error codes, state enums.
+-   ****: Static strings, error codes, state enums.
 -   **Private**: User input, sensor values, file paths.
 
 ## 5. Usage
 ```swift
 let log = LogContext("MECH")
 log.info("Starting training...")
-log.debug("Accuracy: \(accuracy, privacy: .public)")
+log.debug("Accuracy: \(accuracy, privacy: .)")
 ```

@@ -8,24 +8,6 @@
 import Foundation
 import os
 
-public struct DefaultLogger: Sendable {
-    private let logger: os.Logger
-
-    public init(subsystem: String = (Bundle.main.bundleIdentifier ?? "com.canvas.app"), category: String = "DEFAULT") {
-        self.logger = os.Logger(subsystem: subsystem, category: category)
-    }
-
-    public func log(_ message: String) {
-        logger.log("#Info | \(message)")
-    }
-
-    public func info(_ message: String) { logger.log("#Info | \(message)") }
-    public func debug(_ message: String) { logger.debug("#Debg | \(message)") }
-    public func notice(_ message: String) { logger.notice("#Note | \(message)") }
-    public func warning(_ message: String) { logger.warning("#Warn | \(message)") }
-    public func error(_ message: String) { logger.error("#Eror | \(message)") }
-}
-
 /// A context-aware logger that prefixes logs with a label.
 ///
 /// `LogContext` provides a convenient wrapper around `DefaultLogger` that automatically
@@ -34,6 +16,20 @@ public struct DefaultLogger: Sendable {
 public struct LogContext: Sendable {
     private let label: String
     private let logger: os.Logger
+
+    /// Date formatter used for the timestamp prefix.
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)!
+        formatter.dateFormat = "dd.MM.yyyy.HH.mm.ss.SSS"
+        return formatter
+    }()
+
+    /// Returns the current timestamp string.
+    private var timestamp: String {
+        Self.dateFormatter.string(from: Date())
+    }
 
     /// Initializes a new log context with a specific label.
     /// - Parameter label: The label to prefix logs with (e.g., "AUTH", "NETW"). Must be exactly 4 characters.
@@ -44,60 +40,59 @@ public struct LogContext: Sendable {
         self.logger = os.Logger(subsystem: subsystem, category: label)
     }
 
-    /// Initializes a new log context with an existing DefaultLogger.
-    /// - Parameters:
-    ///   - label: The 4-character label to prefix logs with.
-    ///   - defaultLogger: A DefaultLogger instance used to infer subsystem/category.
-    public init(_ label: String, defaultLogger: DefaultLogger) {
-        assert(label.count == 4, "LogContext label must be exactly 4 characters")
-        let subsystem = Bundle.main.bundleIdentifier ?? "com.canvas.app"
-        self.label = label
-        self.logger = os.Logger(subsystem: subsystem, category: label)
+    /// Logs an initialization message.
+    public func inited() {
+        logger.log("\(timestamp) | \(label) | #Init | Initialized")
+    }
+
+    /// Logs a deinitialization message.
+    public func deinited() {
+        logger.log("\(timestamp) | \(label) | #Deinit | Deinitialized")
     }
 
     /// Logs a standard message.
     /// - Parameter message: The message to log.
     public func info(_ message: String) {
-        logger.log("#Info | \(message)")
-    }
-
-    /// Logs an initialization message.
-    public func inited() {
-        logger.log("#Init | \(label)")
-    }
-
-    /// Logs a deinitialization message.
-    public func deinited() {
-        logger.log("#Dint | \(label)")
+        logger.log("\(timestamp) | \(label) | #Info | \(message)")
     }
 
     /// Logs a warning message.
     /// - Parameter message: The warning message.
     public func warning(_ message: String) {
-        logger.warning("#Warn | \(message)")
+        logger.warning("\(timestamp) | \(label) | #Warning | \(message)")
     }
 
     /// Logs an error message.
     /// - Parameter message: The error message.
     public func error(_ message: String) {
-        logger.error("#Eror | \(message)")
+        logger.error("\(timestamp) | \(label) | #Error | \(message)")
     }
 
-    /// Logs a debug message.
-    /// - Parameter message: The debug message.
-    public func debug(_ message: String) {
-        logger.debug("#Debg | \(message)")
+    #if DEBUG
+        /// Logs a debug message.
+        /// - Parameter message: The debug message.
+        public func debug(_ message: String) {
+            logger.debug("\(timestamp) | \(label) | #Debug | \(message)")
+        }
+    #endif
+
+    #if DEBUG
+        /// Logs an expected behavior message (useful for tests or verifying flow).
+        /// - Parameter message: The message describing the expected behavior.
+        public func notice(_ message: String) {
+            logger.notice("\(timestamp) | \(label) | #Notice | \(message)")
+        }
+    #endif
+
+    /// Logs an expected behavior message (useful for tests or verifying flow).
+    /// - Parameter message: The message describing the expected behavior.
+    public func critical(_ message: String) {
+        logger.critical("\(timestamp) | \(label) | #Critical | \(message)")
     }
 
     /// Logs an expected behavior message (useful for tests or verifying flow).
     /// - Parameter message: The message describing the expected behavior.
-    public func notice(_ message: String) {
-        logger.notice("#Note | \(message)")
-    }
-
-    /// Logs an expected behavior message (alias for notice).
-    /// - Parameter message: The message describing the expected behavior.
-    public func expected(_ message: String) {
-        logger.notice("#Note | \(message)")
+    public func fault(_ message: String) {
+        logger.fault("\(timestamp) | \(label) | #Fault | \(message)")
     }
 }
