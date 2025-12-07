@@ -59,7 +59,7 @@ public struct LogContext: Sendable {
     /// Logs a warning message.
     /// - Parameter message: The warning message.
     public func warning(_ message: String) {
-        logger.warning("\(timestamp) | \(label) | #Warning | \(message)")
+        logger.warning("\(timestamp) | \(label) | #Warn | \(message)")
     }
 
     /// Logs an error message.
@@ -67,23 +67,7 @@ public struct LogContext: Sendable {
     public func error(_ message: String) {
         logger.error("\(timestamp) | \(label) | #Error | \(message)")
     }
-
-    #if DEBUG
-        /// Logs a debug message.
-        /// - Parameter message: The debug message.
-        public func debug(_ message: String) {
-            logger.debug("\(timestamp) | \(label) | #Debug | \(message)")
-        }
-    #endif
-
-    #if DEBUG
-        /// Logs an expected behavior message (useful for tests or verifying flow).
-        /// - Parameter message: The message describing the expected behavior.
-        public func notice(_ message: String) {
-            logger.notice("\(timestamp) | \(label) | #Notice | \(message)")
-        }
-    #endif
-
+    
     /// Logs an expected behavior message (useful for tests or verifying flow).
     /// - Parameter message: The message describing the expected behavior.
     public func critical(_ message: String) {
