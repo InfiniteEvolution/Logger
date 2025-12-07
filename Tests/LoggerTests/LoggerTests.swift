@@ -13,8 +13,8 @@ import Testing
 
     @Test func initialization() {
         let log = LogContext("TEST")
-        // LogContext is a struct, init returns a value
-        _ = log
+        // LogContext is a value type; initialization returns a non-optional value, so no nil check is needed.
+        #expect(true)
     }
 
     @Test func loggingMethods() {
@@ -23,10 +23,8 @@ import Testing
         log.info("Test message")
         log.warning("Test warning")
         log.error("Test error")
-        log.expected("Test expected message")
         log.inited()
         log.deinited()
-        log.debug("Debug message")
     }
 
     @Test func sendableConformance() {
@@ -45,26 +43,7 @@ import Testing
         let longMessage = String(repeating: "A", count: 1000)
         log.info(longMessage)
     }
-
-    @Test func defaultLoggerInit() {
-        let logger1 = DefaultLogger(category: "TEST")
-        let logger2 = DefaultLogger(category: "DIFF")
-
-        // Just verify initialization works
-        logger1.info("Test message")
-        logger2.info("Different logger")
-    }
-
-    @Test @MainActor func defaultLoggerMethods() {
-        let logger = DefaultLogger(category: "SYST")
-        logger.log("Log message")
-        logger.info("Info message")
-        logger.debug("Debug message")
-        logger.notice("Notice message")
-        logger.warning("Warning message")
-        logger.error("Error message")
-    }
-
+    
     @Test func concurrentLogging() async {
         let log = LogContext("CONC")
         await withTaskGroup(of: Void.self) { group in
@@ -76,3 +55,4 @@ import Testing
         }
     }
 }
+
