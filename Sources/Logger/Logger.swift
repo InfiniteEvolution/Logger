@@ -13,6 +13,7 @@ import os
 /// `LogContext` provides a convenient wrapper around `DefaultLogger` that automatically
 /// prefixes all log messages with a 4-character label. This helps in filtering and
 /// identifying logs from specific components.
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 public struct LogContext: Sendable {
     private let label: String
     private let logger: os.Logger
@@ -42,12 +43,12 @@ public struct LogContext: Sendable {
 
     /// Logs an initialization message.
     public func inited() {
-        logger.log("\(timestamp) | \(label) | #Init | Initialized")
+        logger.log("\(timestamp) | \(label) | #Init | Initialized.")
     }
 
     /// Logs a deinitialization message.
     public func deinited() {
-        logger.log("\(timestamp) | \(label) | #Deinit | Deinitialized")
+        logger.log("\(timestamp) | \(label) | #Deinit | Deinitialized.")
     }
 
     /// Logs a standard message.
@@ -55,11 +56,11 @@ public struct LogContext: Sendable {
     public func info(_ message: String) {
         logger.info("\(timestamp) | \(label) | #Info | \(message)")
     }
-    
+
     /// Logs a debug message (verbose).
     /// - Parameter message: The message to log.
     public func debug(_ message: String) {
-        logger.debug("\(timestamp) | \(label) | #Debug | \(message)")
+        logger.debug("\(timestamp) | \(label) | #Debg | \(message)")
     }
 
     /// Logs a warning message.
