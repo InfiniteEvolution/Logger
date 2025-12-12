@@ -42,12 +42,12 @@ public struct LogContext: Sendable {
 
     /// Logs an initialization message.
     public func inited() {
-        logger.log("\(timestamp) | \(label) | #Init | Initialized")
+        logger.log("\(timestamp) | \(label) | #Init | Initialized.")
     }
 
     /// Logs a deinitialization message.
     public func deinited() {
-        logger.log("\(timestamp) | \(label) | #Deinit | Deinitialized")
+        logger.log("\(timestamp) | \(label) | #Deinit | Deinitialized.")
     }
 
     /// Logs a standard message.
@@ -55,11 +55,11 @@ public struct LogContext: Sendable {
     public func info(_ message: String) {
         logger.info("\(timestamp) | \(label) | #Info | \(message)")
     }
-    
+
     /// Logs a debug message (verbose).
     /// - Parameter message: The message to log.
     public func debug(_ message: String) {
-        logger.debug("\(timestamp) | \(label) | #Debug | \(message)")
+        logger.debug("\(timestamp) | \(label) | #Debg | \(message)")
     }
 
     /// Logs a warning message.
