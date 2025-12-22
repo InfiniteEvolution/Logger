@@ -13,6 +13,7 @@ import os
 /// `LogContext` provides a convenient wrapper around `DefaultLogger` that automatically
 /// prefixes all log messages with a 4-character label. This helps in filtering and
 /// identifying logs from specific components.
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 public struct LogContext: Sendable {
     private let label: String
     private let logger: os.Logger
