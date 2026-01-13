@@ -38,7 +38,7 @@ import Testing
         let log = LogContext("TEST")
         log.info("Message with special chars: !@#$%^&*()")
         log.info("Message with newline\ncharacter")
-        log.info("Unicode: 你好世界 🌍 émojis 🎉")
+        log.info("Unicode: 你好世界")
         log.info("")
         let longMessage = String(repeating: "A", count: 1000)
         log.info(longMessage)

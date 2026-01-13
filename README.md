@@ -1,4 +1,4 @@
-# 📝 L O G G E R
+# L O G G E R
 
 ### The Console of Canvas.
 
@@ -8,27 +8,27 @@
 
 ---
 
-## � Contents
+## Contents
 - [Overview](#-overview)
-- [Features](#️-features)
+- [Features](#-features)
 - [Usage](#-usage)
 - [Navigation](#-navigation)
 
 ---
 
-## �📖 Overview
+## Overview
 **Logger** is a lightweight, thread-safe diagnostics utility wrapping Apple's `OSLog`. It provides structured logging without the performance penalty of `print()`.
 
 ---
 
-## ⚡️ Features
+## Features
 -   **Subsystem Partitioning**: Automatically categorizes logs by Package (`com.canvas.store`, `com.canvas.trainer`).
 -   **Privacy Redaction**: Respects OS-level privacy settings for sensitive data.
 -   **Zero Overhead**: Compiled out in Release builds where appropriate.
 
 ---
 
-## 🚀 Usage
+## Usage
 
 ```swift
 import Logger
@@ -39,7 +39,7 @@ logger.debug("View loaded", metadata: ["time": 0.5])
 
 ---
 
-## 🧭 Navigation
+## Navigation
 
 | Package | Role |
 | :--- | :--- |
