@@ -69,9 +69,9 @@ All source code is assumed to run exclusively on **iOS 26**.
   * No build artifacts or intermediate files in root directory
   * All macOS system files (.DS_Store) must be gitignored
 * **Minimum Footprint & Efficiency** (CRITICAL):
-  * Data Storage: Use binary formats (26 bytes/record) over text (120+ bytes/record)
+  * Data Storage: Use binary formats (24 bytes/record) over text (120+ bytes/record)
   * Battery: Event-driven > timers, batching > frequent I/O, O(1) > O(n)
-  * Memory: Fixed-size structs, memory-mapped files, no runtime allocations in hot paths
+  * Memory: Swift-level object pooling, high-level collection optimizations, no unnecessary allocations in hot paths
   * Compression: LZFSE for cold storage (10x reduction), Float16 for sensor values
   * Rationale: App runs continuously in background processing millions of sensor readings
 * **Single Source of Truth** (MANDATORY):
