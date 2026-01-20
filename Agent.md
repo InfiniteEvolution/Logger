@@ -121,6 +121,25 @@ All source code is assumed to run exclusively on **iOS 26**.
 
   * `README.md`
   * Project Whitepaper (architecture / design document)
+* **After every TASK COMPLETION** (MANDATORY):
+  * **README.md**: Update all package READMEs with new features/changes
+  * **WHITEPAPER.md**: Update technical details and architecture diagrams
+  * **Code Comments**: Ensure all new code has proper documentation
+  * **AGENT.md**: Update constraints, rules, and concerns
+  * Rationale: Documentation drift causes confusion and maintenance burden
+* **After every TASK COMPLETION - Build Verification** (MANDATORY):
+  * **Build Check**: Run `xcodebuild -scheme Canvas build` and confirm BUILD SUCCEEDED
+  * **Test Check**: Run `xcodebuild -scheme Canvas test` and confirm all tests pass
+  * **No Partial Success**: Task is NOT complete until both build AND tests succeed
+  * **Fix Before Proceeding**: If build/tests fail, fix issues before moving to next task
+  * Rationale: Broken builds block the team and compound technical debt
+* **After every TASK COMPLETION - Test Coverage** (MANDATORY):
+  * **Review Changed Code**: Identify all new/modified functions and classes
+  * **Assess Coverage**: Determine if existing tests cover the changes
+  * **Add Tests If Required**: Write unit tests for any uncovered logic paths
+  * **Edge Cases**: Test boundary conditions, error handling, and failure modes
+  * **Minimum Standard**: All public APIs must have at least one test
+  * Rationale: Untested code is broken code waiting to happen
 
 ---
 
