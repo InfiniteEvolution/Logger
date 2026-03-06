@@ -1,0 +1,79 @@
+@preconcurrency import CoreML
+import Foundation
+
+/// A reusable base for Neural Brains to reduce binary bloat.
+///
+/// As an actor, all member access from outside requires `await` (actor hop).
+/// `MLModel.prediction(from:)` is itself async and requires `await` independently.
+public actor BaseNeuralBrain {
+    private let log: LogContext
+    private nonisolated(unsafe) var model: MLModel?
+    private var isLoaded = false
+    private let modelName: String
+    private let modelBundle: Bundle
+    private var governor: ResourceGovernor?
+    
+    public init(label: String, modelName: String, bundle: Bundle? = nil) {
+        self.log = LogContext(label)
+        self.modelName = modelName
+        self.modelBundle = bundle ?? .module
+    }
+    
+    public func ensureModelLoaded() async throws {
+        if governor == nil {
+            let labelCopy = "Brain.\(self.modelName)"
+            self.governor = ResourceGovernor(label: labelCopy, onRelease: { [weak self] in
+                await self?.unload()
+            })
+            await governor?.start()
+        }
+        await governor?.touch()
+        if isLoaded { return }
+        
+        // Resolve model URL
+        let compiledExtension = "mlmodelc"
+        var modelURL = modelBundle.url(forResource: modelName, withExtension: compiledExtension)
+        
+        // Fallback to Bundle.module if requested bundle doesn't have it (common in SPM tests)
+        if modelURL == nil && modelBundle != .module {
+            modelURL = Bundle.module.url(forResource: modelName, withExtension: compiledExtension)
+        }
+        
+        guard let finalURL = modelURL else {
+            log.error("Model \(modelName) missing from both provided bundle and Logger.module")
+            throw NSError(domain: "BaseNeuralBrain", code: 1, userInfo: [NSLocalizedDescriptionKey: "Model \(modelName) missing"])
+        }
+        
+        let config = MLModelConfiguration()
+        if #available(macOS 13.0, *) {
+            config.computeUnits = .cpuAndNeuralEngine
+        } else {
+            config.computeUnits = .all
+        }
+        // Use synchronous init for better compatibility in SwiftPM environments
+        model = try MLModel(contentsOf: finalURL, configuration: config)
+        isLoaded = true
+        log.info("Loaded \(modelName)")
+    }
+    
+    /// Run a prediction using the loaded ML model.
+    ///
+    /// `model.prediction(from:)` is async (MLModel API) and requires `await`.
+    public func prediction(from input: SendableFeatureProvider) async throws -> SendableFeatureProvider {
+        try await ensureModelLoaded()
+        guard let model = model else {
+            log.error("Model not loaded after ensureModelLoaded")
+            throw NSError(domain: "BaseNeuralBrain", code: 2, userInfo: [NSLocalizedDescriptionKey: "Model not loaded"])
+        }
+        // MLModel.prediction(from:) is async in macOS 26 SDK
+        let result = try await model.prediction(from: input.provider)
+        await governor?.touch()
+        return SendableFeatureProvider(result)
+    }
+    
+    public func unload() {
+        model = nil
+        isLoaded = false
+        log.info("Unloaded \(modelName)")
+    }
+}
