@@ -2,14 +2,13 @@ import Foundation
 
 /// Global registry for all neurally-governed resources.
 /// Enables intelligence-driven eviction based on global system pressure.
-public actor NeuralResourceRegistry {
-    public static let shared = NeuralResourceRegistry()
-    
+public final actor NeuralResourceRegistry {
     private var governors: [String: ResourceGovernor] = [:]
     private let log = LogContext("RERE") // RE (Resource) + RE (Registry)
     private var isCascading = false
     
-    private init() {}
+    public init() {}
+
     
     /// Registers a governor for a specific resource.
     public func register(_ governor: ResourceGovernor, for resourceID: String) {

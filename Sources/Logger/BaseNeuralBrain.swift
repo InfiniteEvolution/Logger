@@ -5,7 +5,7 @@ import Foundation
 ///
 /// As an actor, all member access from outside requires `await` (actor hop).
 /// `MLModel.prediction(from:)` is itself async and requires `await` independently.
-public actor BaseNeuralBrain {
+public final actor BaseNeuralBrain {
     private let log: LogContext
     private nonisolated(unsafe) var model: MLModel?
     private var isLoaded = false
@@ -13,18 +13,38 @@ public actor BaseNeuralBrain {
     private let modelBundle: Bundle
     private var governor: ResourceGovernor?
     
-    public init(label: String, modelName: String, bundle: Bundle? = nil) {
+    private let governorBrain: GovernorNeuralBrain?
+    private let batcher: ResourceBatcher?
+    private let registry: NeuralResourceRegistry?
+    
+    public init(
+        label: String, 
+        modelName: String, 
+        bundle: Bundle? = nil,
+        governorBrain: GovernorNeuralBrain? = nil,
+        batcher: ResourceBatcher? = nil,
+        registry: NeuralResourceRegistry? = nil
+    ) {
         self.log = LogContext(label)
         self.modelName = modelName
         self.modelBundle = bundle ?? .module
+        self.governorBrain = governorBrain
+        self.batcher = batcher
+        self.registry = registry
     }
     
     public func ensureModelLoaded() async throws {
-        if governor == nil {
+        if governor == nil, let gBrain = governorBrain, let gBatcher = batcher, let gRegistry = registry {
             let labelCopy = "Brain.\(self.modelName)"
-            self.governor = ResourceGovernor(label: labelCopy, onRelease: { [weak self] in
-                await self?.unload()
-            })
+            self.governor = ResourceGovernor(
+                label: labelCopy,
+                brain: gBrain,
+                batcher: gBatcher,
+                registry: gRegistry,
+                onRelease: { [weak self] in
+                    await self?.unload()
+                }
+            )
             await governor?.start()
         }
         await governor?.touch()
@@ -45,11 +65,7 @@ public actor BaseNeuralBrain {
         }
         
         let config = MLModelConfiguration()
-        if #available(macOS 13.0, *) {
-            config.computeUnits = .cpuAndNeuralEngine
-        } else {
-            config.computeUnits = .all
-        }
+        config.computeUnits = .cpuAndNeuralEngine
         // Use synchronous init for better compatibility in SwiftPM environments
         model = try MLModel(contentsOf: finalURL, configuration: config)
         isLoaded = true
@@ -65,7 +81,7 @@ public actor BaseNeuralBrain {
             log.error("Model not loaded after ensureModelLoaded")
             throw NSError(domain: "BaseNeuralBrain", code: 2, userInfo: [NSLocalizedDescriptionKey: "Model not loaded"])
         }
-        // MLModel.prediction(from:) is async in macOS 26 SDK
+        
         let result = try await model.prediction(from: input.provider)
         await governor?.touch()
         return SendableFeatureProvider(result)

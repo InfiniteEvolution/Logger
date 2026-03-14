@@ -2,16 +2,18 @@ import Foundation
 import CoreML
 
 /// Collects and batches resource telemetry for on-device k-NN training.
-public actor ResourceBatcher {
-    public static let shared = ResourceBatcher()
-    
+public final actor ResourceBatcher {
     private var samples: [ResourceSample] = []
     private let maxBatchSize = 10
     private let log = LogContext("REBA") // RE (Resource) + BA (Batcher)
+    private let brain: GovernorNeuralBrain
     
-    private init() {}
+    public init(brain: GovernorNeuralBrain) {
+        self.brain = brain
+    }
+
     
-    public struct ResourceSample: Sendable {
+public struct ResourceSample: Sendable {
         let resourceID: Double
         let eventID: Double
         let frequency: Double
@@ -51,9 +53,10 @@ public actor ResourceBatcher {
         log.info("Batching \(batch.count) samples for Governor tuning.")
         
         do {
-            try await GovernorNeuralBrain.shared.tune(with: batch)
+            try await brain.tune(with: batch)
         } catch let tuneError {
             log.error("Failed to tune Governor: \(tuneError)")
         }
     }
+
 }

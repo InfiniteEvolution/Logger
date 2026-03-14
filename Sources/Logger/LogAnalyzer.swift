@@ -10,11 +10,23 @@ import CoreML
 
 /// Analyzes execution patterns to detect anomalies.
 public final class LogAnalyzer: @unchecked Sendable {
-    private let brain = BaseNeuralBrain(label: "LOGA", modelName: "Governor")
+    private let brain: BaseNeuralBrain
     private let log = LogContext("LOAN")
     
-    public init() {}
-    public struct Insight: Sendable {
+    public init(
+        governorBrain: GovernorNeuralBrain? = nil,
+        batcher: ResourceBatcher? = nil,
+        registry: NeuralResourceRegistry? = nil
+    ) {
+        self.brain = BaseNeuralBrain(
+            label: "LOGA",
+            modelName: "Governor",
+            governorBrain: governorBrain,
+            batcher: batcher,
+            registry: registry
+        )
+    }
+public struct Insight: Sendable {
         public let context: Logger.Context
         public let metric: String
         public let value: String
@@ -29,7 +41,7 @@ public final class LogAnalyzer: @unchecked Sendable {
     }
     
     // Autonomic State
-    public struct HealthState: Sendable {
+public struct HealthState: Sendable {
         public let status: Status
         public let action: AutonomicAction
         
@@ -71,7 +83,13 @@ public final class LogAnalyzer: @unchecked Sendable {
             let flickerNorm = Double(recentTasks) / 10.0
             
             // Input Vector construction
-            guard let input = try? MLMultiArray(shape: [4], dataType: .double) else { continue }
+            let input: MLMultiArray
+            do {
+                input = try MLMultiArray(shape: [4], dataType: .double)
+            } catch {
+                log.error("Failed to create MLMultiArray in analyze: \(error)")
+                continue
+            }
             input[0] = NSNumber(value: driftNorm)   // Drift
             input[1] = NSNumber(value: flickerNorm) // Flicker
             input[2] = NSNumber(value: failureRate) // Fragility

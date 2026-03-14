@@ -2,12 +2,22 @@
 import Foundation
 
 /// The validated ML brain for the Logger.
-public actor LoggerNeuralBrain {
+public final actor LoggerNeuralBrain {
     private let log = LogContext("LONB")
     private let base: BaseNeuralBrain
     
-    public init() {
-        self.base = BaseNeuralBrain(label: "LOLN", modelName: "LoggerBrain")
+    public init(
+        governorBrain: GovernorNeuralBrain? = nil,
+        batcher: ResourceBatcher? = nil,
+        registry: NeuralResourceRegistry? = nil
+    ) {
+        self.base = BaseNeuralBrain(
+            label: "LOLN",
+            modelName: "LoggerBrain",
+            governorBrain: governorBrain,
+            batcher: batcher,
+            registry: registry
+        )
     }
     
     public func shouldLog(features: MLMultiArray) async -> Bool {
