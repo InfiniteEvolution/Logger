@@ -1,3 +1,7 @@
+//  Logger+Types.swift
+//  Logger
+//
+//  Strategic types and structures for the diagnostic telemetry system.
 import Foundation
 
 extension Logger {
@@ -17,7 +21,7 @@ extension Logger {
         public let metric: String
         /// The current value of that metric.
         public let value: String
-        
+
         public init(context: Context, action: LogAnalyzer.AutonomicAction, metric: String, value: String) {
             self.context = context
             self.action = action
@@ -30,23 +34,23 @@ extension Logger {
     public struct Context: Hashable, Sendable, CustomStringConvertible {
         /// The 4-character uppercase label for this context (e.g. GENL).
         public let label: String
-        
+
         /// Initializes a new context from a label string.
         /// - Parameter label: The label (will be uppercased).
         public init(_ label: String) {
             self.label = label.uppercased()
         }
-        
+
         public var description: String { label }
         public var rawValue: String { label }
-        
+
         /// A stable numerical identifier derived from the label hash (0.0 to 10.0).
         /// Used as feature input for neural governance models.
         var id: Double {
             let hash = abs(label.hashValue)
             return Double(hash % 100) / 10.0
         }
-        
+
         /// Generic context for non-specific platform logs.
         public static let general = Context("GENL")
     }
@@ -67,7 +71,7 @@ extension Logger {
         public let isError: Bool
         /// Optional identifier for tracing requested logic chains.
         public let correlationId: String?
-        
+
         public init(id: UUID = UUID(), timestamp: Date, level: Int, context: Context, message: String, isError: Bool, correlationId: String?) {
             self.id = id
             self.timestamp = timestamp
@@ -77,11 +81,11 @@ extension Logger {
             self.isError = isError
             self.correlationId = correlationId
         }
-        
+
         /// Human-readable time representation.
         public var formattedTime: String {
             let formatter = DateFormatter()
-            formatter.dateFormat = "HH:mm:ss.SSS"
+            formatter.dateFormat = "dd-MM-yyyy-HH:mm:ss:SSS"
             return formatter.string(from: timestamp)
         }
     }

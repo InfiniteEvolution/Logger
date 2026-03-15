@@ -33,6 +33,9 @@ Root Constraint Checklist (auto-affirmation):
 * Use plain ASCII text only (exception: code points in string literals when functionally required)
 * Rationale: Improves accessibility, readability, and cross-platform compatibility
 * All public types, methods, and properties must be documented using **Apple DocC style** (Summary, Discussion, Parameters, Returns, Throws, Examples)
+* **Import Hygiene**: Remove all unwanted, unused, or duplicate imports.
+* **File Headers**: Maintain a standardized format for all file headers across the project.
+* **White Space**: Clean up all unwanted white space and redundant new lines.
 
 ---
 
@@ -58,6 +61,7 @@ Root Constraint Checklist (auto-affirmation):
   * Logger uses models to classify or prioritize logs/metrics.
 * **No Static Behavioral Values**:
   * Thresholds for log levels or sampling rates MUST be model-driven.
+* **Zero Constant Usage**: Hardcoded constants are prohibited; all behavioral values must be model-driven or registry-provided.
 
 ---
 
@@ -69,6 +73,8 @@ Root Constraint Checklist (auto-affirmation):
 * **Nonisolated**: `nonisolated` members do NOT require `await`.
 * **Final Actors**: All actors must be `final`.
 * **No @Observable on Actors**: `@Observable` macro NOT allowed on actors.
+* **Implicit Self**: After `guard let self else { return }`, remove explicit `self.` usage below this guard if possible.
+* **Minimize Optionals**: Favor non-optional types and exhaustive handling to minimize optional usage.
 
 ### Dependency Injection (Phase 2+)
 * **Mandatory DI**: Use Dependency Injection for all components.
@@ -80,8 +86,9 @@ Root Constraint Checklist (auto-affirmation):
 
 ### Error Handling & Logging
 * **Explicit Handling**: Functions return `Result<T, Error>` or `throws` (never `try?`).
-* **Zero-Default-Silence**: Every `??` fallback or `default` case MUST log.
-* **Else-Logging**: Every early return or fallback path must be documented.
+* **Zero-Default-Silence**: Every `else`, `default`, `catch`, `??` fallback, or optional chaining usage MUST log.
+* **Single Condition**: Use a single condition for `guard`, `if`, or `else if` statements, and log the failure in the `else` block.
+* **Logging Format**: `Time | Context<Absolute 4 Char> | #ERROR OR #INFO OR #WARNING | Message` (Strictly enforced).
 * **LogContext Requirements**: Label must be exactly 4 characters.
 
 ---
@@ -161,4 +168,5 @@ Root Constraint Checklist (auto-affirmation):
 
 ### Specialized Logging Convention
 - **LogContext label must be exactly 4 characters** (MANDATORY)
+- **Logging Format**: `Time | Context<Absolute 4 Char> | #ERROR OR #INFO OR #WARNING | Message` (MANDATORY)
 - **Blind Logger Rule**: Logger has no idea about who uses it. It accepts string contexts and maps them generically.

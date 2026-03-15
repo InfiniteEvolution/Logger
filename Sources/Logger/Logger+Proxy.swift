@@ -1,37 +1,37 @@
+//  Logger+Proxy.swift
+//  Logger
+//
+//  [Add description here]
 import Foundation
 
 // MARK: - LoggerProxy Conformance
 extension Logger: LoggerProxy {
     /// Records a message with a specific LogLevel.
-    /// - Parameters:
-    ///   - message: The diagnostic message.
-    ///   - level: The severity level (debug, info, warning, error).
-    nonisolated public func log(_ message: String, level: LogLevel) {
-        Task { await self._log(message, level: level) }
+    nonisolated public func log(_ message: String, context: Logger.Context, level: LogLevel) {
+        let isError = (level == .error)
+        let intLevel: Int
+        switch level {
+        case .debug: intLevel = 1
+        case .info: intLevel = 1
+        case .warning: intLevel = 2
+        case .error: intLevel = 3
+        }
+        self.log(message, context: context, level: intLevel, isError: isError)
     }
-    
-    /// Records a debug message via the proxy.
-    nonisolated public func debug(_ message: String) {
-        self.log(message, level: .debug)
+
+    nonisolated public func debug(_ message: String, context: Logger.Context) {
+        self.log(message, context: context, level: .debug)
     }
-    
-    /// Records an informational message via the proxy.
-    nonisolated public func info(_ message: String) {
-        self.log(message, level: .info)
+
+    nonisolated public func info(_ message: String, context: Logger.Context) {
+        self.log(message, context: context, level: .info)
     }
-    
-    /// Records a warning message via the proxy.
-    nonisolated public func warning(_ message: String) {
-        self.log(message, level: .warning)
+
+    nonisolated public func warning(_ message: String, context: Logger.Context) {
+        self.log(message, context: context, level: .warning)
     }
-    
-    /// Records an error message via the proxy.
-    nonisolated public func error(_ message: String) {
-        self.log(message, level: .error)
-    }
-    
-    /// Internal isolated method for proxy-initiated logs.
-    private func _log(_ message: String, level: LogLevel) async {
-        print("[\(level)] \(message)")
+
+    nonisolated public func error(_ message: String, context: Logger.Context) {
+        self.log(message, context: context, level: .error)
     }
 }

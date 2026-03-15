@@ -1,7 +1,11 @@
+//  LogTask.swift
+//  Logger
+//
+//  [Add description here]
 import Foundation
 
 /// A high-level representation of an asynchronous task lifecycle with telemetry.
-/// 
+///
 /// Tasks are used to track long-running operations in the system, providing
 /// semantic outcomes (success, failure, interrupted) and duration tracking.
 public struct LogTask: Sendable {
@@ -16,7 +20,7 @@ public struct LogTask: Sendable {
         /// Task was explicitly interrupted by autonomous governance.
         case interrupted
     }
-    
+
     /// Internal record for persistent task monitoring.
     public struct Record: Sendable {
         /// Human-readable name for the task (e.g. Inference).
@@ -31,20 +35,20 @@ public struct LogTask: Sendable {
         public var outcome: Outcome?
         /// The duration of the task in seconds.
         public var duration: TimeInterval?
-        
+
         public init(name: String, context: Logger.Context, start: Date) {
             self.name = name
             self.context = context
             self.start = start
         }
     }
-    
+
     private let logger: Logger
     private let context: Logger.Context
     private let name: String
     private let start = Date()
     private let id = UUID()
-    
+
     /// Initializes a task and records its starting event.
     ///
     /// - Parameters:
@@ -66,7 +70,7 @@ public struct LogTask: Sendable {
             }
         }
     }
-    
+
     /// Completes the task and records its outcome and duration in telemetry.
     /// - Parameter outcome: The state of completion (defaults to .success).
     public func complete(_ outcome: Outcome = .success) {
@@ -75,10 +79,10 @@ public struct LogTask: Sendable {
         let lgr = self.logger
         let ctx = self.context
         let n = self.name
-        
+
         Task {
             await lgr.endTask(id: taskId, outcome: outcome, duration: duration)
-            
+
             let status: String
             switch outcome {
             case .success: status = "SUCCESS"
@@ -86,7 +90,7 @@ public struct LogTask: Sendable {
             case .partial(let r): status = "PARTIAL (\(r))"
             case .interrupted: status = "INTERRUPTED"
             }
-            
+
             lgr.log("Task [\(n)] finished: \(status) | took \(String(format: "%.3fs", duration))", context: ctx, level: 1)
         }
     }

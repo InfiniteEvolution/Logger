@@ -1,3 +1,7 @@
+//  GovernorNeuralBrain.swift
+//  Logger
+//
+//  High-level neural engine for system regulation and resource oversight.
 import Foundation
 @preconcurrency import CoreML
 
@@ -5,14 +9,13 @@ import Foundation
 /// Uses a k-NN model to decide on resource lifecycle.
 public final actor GovernorNeuralBrain {
     private let log = LogContext("GNBR")
-    
+
     private let base: BaseNeuralBrain
-    
+
     public init() {
         self.base = BaseNeuralBrain(label: "GOBR", modelName: "Governor")
     }
 
-    
     public func evaluate(
         resourceID: Double,
         eventID: Double,
@@ -27,7 +30,7 @@ public final actor GovernorNeuralBrain {
             features[2] = NSNumber(value: frequency)
             features[3] = NSNumber(value: interArrivalTime)
             features[4] = NSNumber(value: systemPressure)
-            
+
             let provider = try MLDictionaryFeatureProvider(dictionary: ["features": MLFeatureValue(multiArray: features)])
             let result = try await base.prediction(from: SendableFeatureProvider(provider))
             let output = result.provider
@@ -37,7 +40,7 @@ public final actor GovernorNeuralBrain {
             return 1.0
         }
     }
-    
+
     /// Model training not available on iOS. This is a no-op for iOS 26 target.
     public func tune(with samples: [ResourceBatcher.ResourceSample]) async throws {
         log.info("tune: model training not available on iOS")

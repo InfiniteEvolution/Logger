@@ -1,3 +1,7 @@
+//  ResourceBatcher.swift
+//  Logger
+//
+//  [Add description here]
 import Foundation
 import CoreML
 
@@ -7,12 +11,11 @@ public final actor ResourceBatcher {
     private let maxBatchSize = 10
     private let log = LogContext("REBA") // RE (Resource) + BA (Batcher)
     private let brain: GovernorNeuralBrain
-    
+
     public init(brain: GovernorNeuralBrain) {
         self.brain = brain
     }
 
-    
 public struct ResourceSample: Sendable {
         let resourceID: Double
         let eventID: Double
@@ -21,7 +24,7 @@ public struct ResourceSample: Sendable {
         let systemPressure: Double
         let label: Int64
     }
-    
+
     /// Records a new sample for the governor's brain.
     public func record(
         resourceID: Double,
@@ -40,18 +43,18 @@ public struct ResourceSample: Sendable {
             label: outcome
         )
         samples.append(sample)
-        
+
         if samples.count >= maxBatchSize {
             Task { await flush() }
         }
     }
-    
+
     private func flush() async {
         let batch = samples
         samples.removeAll()
-        
+
         log.info("Batching \(batch.count) samples for Governor tuning.")
-        
+
         do {
             try await brain.tune(with: batch)
         } catch let tuneError {

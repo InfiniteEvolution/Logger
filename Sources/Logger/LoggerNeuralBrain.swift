@@ -1,3 +1,7 @@
+//  LoggerNeuralBrain.swift
+//  Logger
+//
+//  [Add description here]
 @preconcurrency import CoreML
 import Foundation
 
@@ -5,7 +9,7 @@ import Foundation
 public final actor LoggerNeuralBrain {
     private let log = LogContext("LONB")
     private let base: BaseNeuralBrain
-    
+
     public init(
         governorBrain: GovernorNeuralBrain? = nil,
         batcher: ResourceBatcher? = nil,
@@ -19,7 +23,7 @@ public final actor LoggerNeuralBrain {
             registry: registry
         )
     }
-    
+
     public func shouldLog(features: MLMultiArray) async -> Bool {
         do {
             let input = try MLDictionaryFeatureProvider(dictionary: ["log_features": MLFeatureValue(multiArray: features)])
@@ -31,7 +35,7 @@ public final actor LoggerNeuralBrain {
             return true
         }
     }
-    
+
     public func unload() async {
         await base.unload()
     }

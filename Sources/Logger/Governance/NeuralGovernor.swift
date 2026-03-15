@@ -1,3 +1,7 @@
+//  NeuralGovernor.swift
+//  Logger
+//
+//  [Add description here]
 import Foundation
 import CoreML
 
@@ -27,7 +31,7 @@ extension NeuralGovernanceParams {
 public final actor NeuralGovernor<T: GovernanceParams> {
     private let base: BaseNeuralBrain
     private let log: LogContext
-    
+
     public init(
         label: String,
         modelName: String,
@@ -46,7 +50,7 @@ public final actor NeuralGovernor<T: GovernanceParams> {
             registry: registry
         )
     }
-    
+
     /// Predicts the optimal governance parameters based on input features.
     /// - Parameter features: An array of doubles representing the current context.
     /// - Returns: High-level parameters derived from the Silicon prediction.
@@ -56,10 +60,10 @@ public final actor NeuralGovernor<T: GovernanceParams> {
             for (index, value) in features.enumerated() {
                 multiArray[index] = NSNumber(value: value)
             }
-            
+
             let provider = try MLDictionaryFeatureProvider(dictionary: ["features": MLFeatureValue(multiArray: multiArray)])
             let result = try await base.prediction(from: SendableFeatureProvider(provider))
-            
+
             // Priority 1: New multi-array prediction interface
             if let probs = result.provider.featureValue(for: "governance_probs")?.multiArrayValue {
                 var doubleArray = Array(repeating: 0.0, count: probs.count)
@@ -68,12 +72,12 @@ public final actor NeuralGovernor<T: GovernanceParams> {
                     return type.init(prediction: doubleArray) as! T
                 }
             }
-            
+
             // Priority 2: Old string-encoded label interface
             if let label = result.provider.featureValue(for: "governance_params")?.stringValue {
                 return T.parse(label)
             }
-            
+
             return T.defaultParams
         } catch {
             log.warning("decide failed, using default params: \(error)")

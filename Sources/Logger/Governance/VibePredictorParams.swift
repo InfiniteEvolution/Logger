@@ -1,10 +1,14 @@
+//  VibePredictorParams.swift
+//  Logger
+//
+//  [Add description here]
 import Foundation
 
 /// Defines the structure for Vibe prediction governance.
 public struct VibeGovernanceParams: NeuralGovernanceParams {
     public let smoothingWindow: Int
     public let boostThreshold: Double
-    
+
     public init(prediction: [Double]) {
         self.smoothingWindow = prediction.indices.contains(0) ? Int(prediction[0] * 20.0) : 5
         self.boostThreshold = prediction.indices.contains(1) ? prediction[1] : 0.8
@@ -19,7 +23,7 @@ public struct VibePredictorGovernanceParams: NeuralGovernanceParams {
     public let boostThreshold: Double
     public let maxSmoothingWindow: Int
     public let baseWindow: Int
-    
+
     public init(prediction: [Double]) {
         self.confidenceThreshold = prediction.indices.contains(0) ? prediction[0] : 0.7
         self.minimumProbability = prediction.indices.contains(1) ? prediction[1] : 0.5
@@ -34,7 +38,7 @@ public struct VibePredictorGovernanceParams: NeuralGovernanceParams {
 public struct AnomalyGovernanceParams: NeuralGovernanceParams {
     public let zScoreThreshold: Double
     public let rarityThreshold: Double
-    
+
     public init(prediction: [Double]) {
         self.zScoreThreshold = prediction.indices.contains(0) ? prediction[0] * 5.0 : 2.5
         self.rarityThreshold = prediction.indices.contains(1) ? prediction[1] * 0.1 : 0.05
@@ -46,7 +50,7 @@ public struct OptimizationGovernanceParams: NeuralGovernanceParams {
     public let isActive: Bool
     public let priority: Int
     public let stressThreshold: Double
-    
+
     public init(prediction: [Double]) {
         self.isActive = prediction.indices.contains(0) ? prediction[0] > 0.5 : true
         self.priority = prediction.indices.contains(1) ? Int(prediction[1] * 10.0) : 1

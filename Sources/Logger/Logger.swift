@@ -1,3 +1,7 @@
+//  Logger.swift
+//  Logger
+//
+//  Central diagnostic telemetry engine for the entire platform.
 import Foundation
 import CoreML
 
@@ -13,10 +17,10 @@ public final actor Logger: Sendable {
     private let log = LogContext("LOLN")
     /// Posted when autonomic system status changes.
     public static let autonomicAlertNotification = Notification.Name("autonomicAlertNotification")
-    
+
     private let brain: LoggerNeuralBrain
     private var lastBrainAccess = Date.distantPast
-    
+
     private let maxEntries = 500
     private var contextStores: [Context: [Entry]] = [:]
     private var lastLogTimes: [Context: Date] = [:]
@@ -70,7 +74,7 @@ public final actor Logger: Sendable {
             await self.performLog(message, context: context, level: level, isError: isError, timestamp: now, correlationId: correlationId)
         }
     }
-    
+
     /// Isolated method that performs neural sampling and stores the entry.
     private func performLog(_ message: String, context: Context, level: Int, isError: Bool, timestamp: Date, correlationId: String?) async {
         let lastTime = lastLogTimes[context] ?? timestamp
@@ -78,7 +82,7 @@ public final actor Logger: Sendable {
         let seqID = sequenceCounts[context, default: 0]
         sequenceCounts[context] = seqID + 1
         lastLogTimes[context] = timestamp
-        
+
         do {
             let input = try MLMultiArray(shape: [5], dataType: .double)
             input[0] = NSNumber(value: Double(level))
@@ -86,11 +90,19 @@ public final actor Logger: Sendable {
             input[2] = NSNumber(value: deltaTime)
             input[3] = NSNumber(value: context.id)
             input[4] = NSNumber(value: Double(seqID))
-            
+
             if await brain.shouldLog(features: input) {
                 let entry = Entry(timestamp: timestamp, level: level, context: context, message: message, isError: isError, correlationId: correlationId)
-                print("[\(entry.formattedTime)] [\(context.label)]\(correlationId.map { " [\($0)]" } ?? "") \(message)")
-                
+                let tag: String
+                if isError {
+                    tag = "#Error"
+                } else if level >= 2 {
+                    tag = "#Warning"
+                } else {
+                    tag = "#Info"
+                }
+                print("\(entry.formattedTime) | \(context.label) | \(tag) | \(message)\(correlationId.map { " [\($0)]" } ?? "")")
+
                 var store = contextStores[context, default: []]
                 store.append(entry)
                 if store.count > maxEntries { store.removeFirst() }
@@ -100,24 +112,24 @@ public final actor Logger: Sendable {
             log.error("performLog failed: \(error)")
         }
     }
-    
+
     /// Summarizes the current logs for a specific context.
     public func summarize(for context: Context) async -> String {
         let logs = contextStores[context] ?? []
         let tasks = taskRecords.values.filter { $0.context == context }
         guard !logs.isEmpty else { return "No logs for \(context.label)" }
-        
+
         let errors = logs.filter { $0.isError }.count
         let warnings = logs.filter { $0.level == 2 }.count
         let completedTasks = tasks.filter { $0.end != nil }
-        
+
         let successCount = completedTasks.filter { if case .some(.success) = $0.outcome { return true }; return false }.count
         let avgDuration = completedTasks.isEmpty ? 0 : (completedTasks.compactMap { $0.duration }.reduce(0, +) / Double(completedTasks.count))
         let successRate = completedTasks.isEmpty ? 0 : (Double(successCount) / Double(completedTasks.count)) * 100
-        
+
         var summary = "Context: \(context.label) | Logs: \(logs.count) | Errors: \(errors) | Warnings: \(warnings)\n"
         summary += "Tasks: \(completedTasks.count) | Success Rate: \(String(format: "%.1f%%", successRate)) | Avg Duration: \(String(format: "%.3fs", avgDuration))"
-        
+
         let insights = await analyzer.analyze(tasks: completedTasks)
         for insight in insights {
             let label = insight.severity == 2 ? "[CRITICAL]" : "[WARN]"
@@ -130,7 +142,7 @@ public final actor Logger: Sendable {
     public func startTask(id: UUID, name: String, context: Context, timestamp: Date) async throws {
         let records = taskRecords.values.filter { $0.context == context }
         let insights = await analyzer.analyze(tasks: Array(records.suffix(50)))
-        
+
         for insight in insights {
             switch insight.action {
             case .interrupt:
@@ -144,7 +156,7 @@ public final actor Logger: Sendable {
         }
         taskRecords[id] = LogTask.Record(name: name, context: context, start: timestamp)
     }
-    
+
     /// Records the end of a task with outcome and duration.
     public func endTask(id: UUID, outcome: LogTask.Outcome, duration: TimeInterval) {
         if var record = taskRecords[id] {
@@ -153,4 +165,3 @@ public final actor Logger: Sendable {
         }
     }
 }
-

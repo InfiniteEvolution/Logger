@@ -1,3 +1,7 @@
+//  ResourceGovernor.swift
+//  Logger
+//
+//  Unified Resource Governance for the "Zero-Waste Lifecycle".
 import Foundation
 
 /// Unified Resource Governance for the "Zero-Waste Lifecycle".
@@ -33,9 +37,11 @@ public final actor ResourceGovernor {
         self.registry = registry
         self.resourceID = Double(abs(label.hashValue) % 1000)
         self.onRelease = onRelease
-        
+
         Task { [weak self] in
-            guard let self = self else { return }
+            guard let self else {
+                return
+            }
             await registry.register(self, for: label)
             await setupEventObservers()
         }
@@ -49,11 +55,11 @@ public final actor ResourceGovernor {
         lastUsed = Date()
         activityCount += 1
     }
-    
+
     public func currentRelevanceScore() async -> Double {
         let interArrival = Date().timeIntervalSince(lastUsed)
         let frequency = Double(activityCount) / 300.0
-        
+
         return await brain.evaluate(
             resourceID: resourceID,
             eventID: lastEvent.rawValue,
@@ -62,15 +68,19 @@ public final actor ResourceGovernor {
             systemPressure: getSystemPressure()
         )
     }
-    
+
     public func forceRelease() async {
         await onRelease()
         await logRecord(outcome: 0)
     }
-    
-    public func start() {}
-    public func stop() {}
-    
+
+    public func start() {
+        log.warning("\(#function) should be implemented before using.")
+    }
+    public func stop() {
+        log.warning("\(#function) should be implemented before using.")
+    }
+
     internal func getSystemPressure() -> Double {
         let thermal = ProcessInfo.processInfo.thermalState
         switch thermal {
@@ -79,7 +89,7 @@ public final actor ResourceGovernor {
         case .serious: return 0.7
         case .critical: return 1.0
         @unknown default:
-            log.warning("Unknown thermal state encountered")
+            log.warning("REGO: Unknown thermal state encountered (\(thermal)). Defaulting to 0.5 pressure.")
             return 0.5
         }
     }

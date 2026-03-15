@@ -1,3 +1,7 @@
+//  ResourceEvent.swift
+//  Logger
+//
+//  [Add description here]
 import Foundation
 
 /// Standardized system events for Neural Resource Governance.
@@ -11,7 +15,7 @@ public enum ResourceEvent: Double, Sendable, CustomStringConvertible {
     case chargingStateChange = 6.0
     case lowPowerModeChange = 7.0
     case thermalPressureChange = 8.0
-    
+
     /// Maps a Notification Name to a ResourceEvent
     public static func from(notificationName: Notification.Name) -> ResourceEvent {
         switch notificationName.rawValue {
@@ -24,7 +28,7 @@ public enum ResourceEvent: Double, Sendable, CustomStringConvertible {
         default: return .unknown
         }
     }
-    
+
     public var description: String {
         switch self {
         case .unknown: return "unknown"

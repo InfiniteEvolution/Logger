@@ -1,3 +1,7 @@
+//  BaseNeuralBrain.swift
+//  Logger
+//
+//  [Add description here]
 @preconcurrency import CoreML
 import Foundation
 
@@ -12,14 +16,14 @@ public final actor BaseNeuralBrain {
     private let modelName: String
     private let modelBundle: Bundle
     private var governor: ResourceGovernor?
-    
+
     private let governorBrain: GovernorNeuralBrain?
     private let batcher: ResourceBatcher?
     private let registry: NeuralResourceRegistry?
-    
+
     public init(
-        label: String, 
-        modelName: String, 
+        label: String,
+        modelName: String,
         bundle: Bundle? = nil,
         governorBrain: GovernorNeuralBrain? = nil,
         batcher: ResourceBatcher? = nil,
@@ -32,7 +36,7 @@ public final actor BaseNeuralBrain {
         self.batcher = batcher
         self.registry = registry
     }
-    
+
     public func ensureModelLoaded() async throws {
         if governor == nil, let gBrain = governorBrain, let gBatcher = batcher, let gRegistry = registry {
             let labelCopy = "Brain.\(self.modelName)"
@@ -49,21 +53,21 @@ public final actor BaseNeuralBrain {
         }
         await governor?.touch()
         if isLoaded { return }
-        
+
         // Resolve model URL
         let compiledExtension = "mlmodelc"
         var modelURL = modelBundle.url(forResource: modelName, withExtension: compiledExtension)
-        
+
         // Fallback to Bundle.module if requested bundle doesn't have it (common in SPM tests)
         if modelURL == nil && modelBundle != .module {
             modelURL = Bundle.module.url(forResource: modelName, withExtension: compiledExtension)
         }
-        
+
         guard let finalURL = modelURL else {
             log.error("Model \(modelName) missing from both provided bundle and Logger.module")
             throw NSError(domain: "BaseNeuralBrain", code: 1, userInfo: [NSLocalizedDescriptionKey: "Model \(modelName) missing"])
         }
-        
+
         let config = MLModelConfiguration()
         config.computeUnits = .cpuAndNeuralEngine
         // Use synchronous init for better compatibility in SwiftPM environments
@@ -71,7 +75,7 @@ public final actor BaseNeuralBrain {
         isLoaded = true
         log.info("Loaded \(modelName)")
     }
-    
+
     /// Run a prediction using the loaded ML model.
     ///
     /// `model.prediction(from:)` is async (MLModel API) and requires `await`.
@@ -81,12 +85,12 @@ public final actor BaseNeuralBrain {
             log.error("Model not loaded after ensureModelLoaded")
             throw NSError(domain: "BaseNeuralBrain", code: 2, userInfo: [NSLocalizedDescriptionKey: "Model not loaded"])
         }
-        
+
         let result = try await model.prediction(from: input.provider)
         await governor?.touch()
         return SendableFeatureProvider(result)
     }
-    
+
     public func unload() {
         model = nil
         isLoaded = false
