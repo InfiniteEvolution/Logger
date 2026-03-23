@@ -11,10 +11,11 @@ extension Logger: LoggerProxy {
         let isError = (level == .error)
         let intLevel: Int
         switch level {
-        case .debug: intLevel = 1
+        case .debug: intLevel = 0
         case .info: intLevel = 1
         case .warning: intLevel = 2
         case .error: intLevel = 3
+        case .critical: intLevel = 4
         }
         self.log(message, context: context, level: intLevel, isError: isError)
     }
@@ -33,5 +34,9 @@ extension Logger: LoggerProxy {
 
     nonisolated public func error(_ message: String, context: Logger.Context) {
         self.log(message, context: context, level: .error)
+    }
+
+    nonisolated public func critical(_ message: String, context: Logger.Context) {
+        self.log(message, context: context, level: .critical)
     }
 }

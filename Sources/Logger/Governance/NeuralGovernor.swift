@@ -31,16 +31,22 @@ extension NeuralGovernanceParams {
 public final actor NeuralGovernor<T: GovernanceParams> {
     private let base: BaseNeuralBrain
     private let log: LogContext
+    private let inputName: String
+    private let inputShape: [NSNumber]
 
     public init(
         label: String,
         modelName: String,
         bundle: Bundle? = nil,
+        inputName: String = "features",
+        inputShape: [Int] = [4],
         governorBrain: GovernorNeuralBrain,
         batcher: ResourceBatcher,
         registry: NeuralResourceRegistry
     ) {
         self.log = LogContext(label)
+        self.inputName = inputName
+        self.inputShape = inputShape.map { NSNumber(value: $0) }
         self.base = BaseNeuralBrain(
             label: label,
             modelName: modelName,
@@ -56,12 +62,12 @@ public final actor NeuralGovernor<T: GovernanceParams> {
     /// - Returns: High-level parameters derived from the Silicon prediction.
     public func decide(features: [Double]) async -> T {
         do {
-            let multiArray = try MLMultiArray(shape: [NSNumber(value: features.count)], dataType: .double)
-            for (index, value) in features.enumerated() {
-                multiArray[index] = NSNumber(value: value)
+            let multiArray = try MLMultiArray(shape: inputShape, dataType: .double)
+            for i in 0..<inputShape.reduce(1, { $0 * $1.intValue }) {
+                multiArray[i] = NSNumber(value: i < features.count ? features[i] : 0.0)
             }
 
-            let provider = try MLDictionaryFeatureProvider(dictionary: ["features": MLFeatureValue(multiArray: multiArray)])
+            let provider = try MLDictionaryFeatureProvider(dictionary: [inputName: MLFeatureValue(multiArray: multiArray)])
             let result = try await base.prediction(from: SendableFeatureProvider(provider))
 
             // Priority 1: New multi-array prediction interface

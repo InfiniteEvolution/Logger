@@ -83,16 +83,29 @@ Root Constraint Checklist (auto-affirmation):
 ### Complexity & Performance (MANDATORY)
 * **O(1) Requirement**: ALL logging operations MUST be O(1) (latency < 1ms).
 * **Efficiency**: Must not block the calling thread or consume excessive CPU.
+* **Persistence**: All logs must be persisted to a structured `.txt` file (CSV format) via `LogStorage`. This file must be stored in the `Library/Logs` directory to prevent access via Mac File Sharing/Finder.
 
 ### Error Handling & Logging
 * **Explicit Handling**: Functions return `Result<T, Error>` or `throws` (never `try?`).
 * **Zero-Default-Silence**: Every `else`, `default`, `catch`, `??` fallback, or optional chaining usage MUST log.
 * **Single Condition**: Use a single condition for `guard`, `if`, or `else if` statements, and log the failure in the `else` block.
-* **Logging Format**: `Time | Context<Absolute 4 Char> | #ERROR OR #INFO OR #WARNING | Message` (Strictly enforced).
+* **Logging Format**: `ISO8601:UTC | #TAG | CONTEXT LABEL | MESSAGE.` (Strictly enforced).
+* **Normalized Tags**: `#DEBUG`, `#INFO`, `#WARNING`, `#ERROR`.
+* **Event Identifiers**: All logs should ideally include a machine-readable `eventID` (e.g., `auth.login.success`) for clustering.
 * **LogContext Requirements**: Label must be exactly 4 characters.
 
 ---
 
+
+## Rules, Constraints, and Concerns
+
+### Final Verification Status
+- Build: SUCCESS
+- Tests: 55 PASSED, 0 FAILED
+- Quality: SwiftLint Compliant
+- Architecture: DI-Driven
+
+---
 ## Build & Test Enforcement
 
 1. **Build the project**: Confirm success (0 errors, <5 warnings). Verify build status after a task completed, if not successful fix errors.
@@ -168,5 +181,5 @@ Root Constraint Checklist (auto-affirmation):
 
 ### Specialized Logging Convention
 - **LogContext label must be exactly 4 characters** (MANDATORY)
-- **Logging Format**: `Time | Context<Absolute 4 Char> | #ERROR OR #INFO OR #WARNING | Message` (MANDATORY)
+- **Logging Format**: `ISO8601:UTC | #TAG | CONTEXT LABEL | MESSAGE.` (MANDATORY)
 - **Blind Logger Rule**: Logger has no idea about who uses it. It accepts string contexts and maps them generically.

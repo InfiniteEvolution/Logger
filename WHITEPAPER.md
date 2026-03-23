@@ -10,7 +10,7 @@ The `Logger` package provides the diagnostic infrastructure for the Vibe ecosyst
 ### 2.1 The Governance Model
 We implement a **Zero-Silence Doctrine**. Every non-deterministic path (e.g., fallbacks, defaults, error throws) must emit a high-entropy diagnostic signal.
 - **4-Character Context Labels**: Every log entry is prefixed with a fixed-width label (e.g., `VBPR`, `STOR`). This design allows for hardware-accelerated grep/parsing and ensures that diagnostic files remain compact and high-signal.
-- **Unified Diagnostic Contract**: All loggers are registered in the `SiliconRegistry`, allowing for polymorphic routing (e.g., Console vs Persistent Storage vs Remote Audit).
+- **Unified Diagnostic Contract**: All loggers are registered in the `SiliconRegistry`, allowing for polymorphic routing (e.g., Console vs Persistent Storage vs Remote Audit). Persistent logs are stored in the non-shared `Library/Logs` directory for enhanced privacy and to prevent access via Mac File Sharing.
 
 ### 2.2 Traceability across Actor Boundaries
 Logger utilizes the native Task Local state to maintain **Task Context**. This allows for a conceptual "Thread of Consciousness" to be traced:

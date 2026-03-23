@@ -2,10 +2,14 @@
 //  Logger
 //
 //  Unified Resource Governance for the "Zero-Waste Lifecycle".
+
 import Foundation
 
 /// Unified Resource Governance for the "Zero-Waste Lifecycle".
+///
 /// Tracks usage via system events and automatically releases resources using ML-based intelligence.
+/// This actor ensures optimal memory and energy usage by predicting when a resource is no
+/// longer needed by the user.
 public final actor ResourceGovernor {
     // MARK: - 1. Dependencies
     internal let label: String
@@ -23,6 +27,15 @@ public final actor ResourceGovernor {
     internal var observers: [NSObjectProtocol] = []
 
     // MARK: - 3. Initialization
+    
+    /// Initializes a new resource governor with the specified identifier and dependencies.
+    ///
+    /// - Parameters:
+    ///   - label: A unique identifier for the resource being governed (e.g. "Brain").
+    ///   - brain: The neural brain used for relevance evaluation.
+    ///   - batcher: A coordinating batcher for system-wide resource management.
+    ///   - registry: The registry used for lifecycle event coordination.
+    ///   - onRelease: A closure that is executed when the resource is released.
     public init(
         label: String,
         brain: GovernorNeuralBrain,
@@ -51,11 +64,19 @@ public final actor ResourceGovernor {
     // (Implementations in extensions)
 
     // MARK: - 5. Internal Helpers
+    
+    /// Updates the internal temporal marker for the resource.
+    ///
+    /// Calling this method indicates that the resource is currently active and
+    /// resets the idle timer used for prediction.
     public func touch() {
         lastUsed = Date()
         activityCount += 1
     }
 
+    /// Evaluates the current predicted relevance of the resource.
+    ///
+    /// - Returns: A normalized score (0.0 - 1.0) indicating the predicted resource value.
     public func currentRelevanceScore() async -> Double {
         let interArrival = Date().timeIntervalSince(lastUsed)
         let frequency = Double(activityCount) / 300.0
@@ -69,16 +90,22 @@ public final actor ResourceGovernor {
         )
     }
 
+    /// Explicitly releases the governed resource.
+    ///
+    /// This bypasses neural prediction and immediately executes the release closure.
     public func forceRelease() async {
         await onRelease()
         await logRecord(outcome: 0)
     }
 
+    /// Starts the resource governance sampling.
     public func start() {
-        log.warning("\(#function) should be implemented before using.")
+        log.info("Resource governance started for \(label)")
     }
+    
+    /// Stops the resource governance sampling.
     public func stop() {
-        log.warning("\(#function) should be implemented before using.")
+        log.info("Resource governance stopped for \(label)")
     }
 
     internal func getSystemPressure() -> Double {

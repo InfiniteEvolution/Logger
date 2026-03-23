@@ -10,7 +10,6 @@ public final class ModelStorage: Sendable {
 
     /// Returns the best available model URL (prioritizing writable storage).
     public func bestModelURL(for modelName: String, bundle: Bundle = .main, fallbackBundle: Bundle? = nil) -> URL? {
-        let name = modelName.hasSuffix(".mlmodelc") ? modelName : modelName + ".mlmodelc"
         let writable = writableURL(for: modelName)
 
         if FileManager.default.fileExists(atPath: writable.path) {
