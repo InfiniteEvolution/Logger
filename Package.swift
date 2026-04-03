@@ -14,14 +14,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Logger",
-            resources: [
-                .process("Resources")
-            ]
-        ),
-        .testTarget(
-            name: "LoggerTests",
-            dependencies: ["Logger"]
-        ),
+            name: "Logger"
+        )
     ]
 )

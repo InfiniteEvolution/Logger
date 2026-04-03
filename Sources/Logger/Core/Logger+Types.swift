@@ -5,51 +5,29 @@
 import Foundation
 
 extension Logger {
-    /// Autonomic regulation error thrown when logic indicates system failure.
-    public enum AutonomicError: Error {
-        /// Execution was interrupted with a reason.
-        case interrupted(String)
-    }
-
-    /// Payload for autonomic system alerts posted via notification.
-    ///
-    /// AutonomicAlert is used to broadcast critical system status changes
-    /// that require immediate attention or autonomic intervention.
-    public struct AutonomicAlert: Sendable {
-        /// The logging context where the alert originated.
-        public let context: Context
-        /// The action determined by the analyzer (e.g. interrupt, throttle).
-        public let action: LogAnalyzer.AutonomicAction
-        /// The specific performance or health metric being flagged.
-        public let metric: String
-        /// The current value of that metric.
-        public let value: String
-
-        /// Initializes a new alert payload.
-        public init(context: Context, action: LogAnalyzer.AutonomicAction, metric: String, value: String) {
-            self.context = context
-            self.action = action
-            self.metric = metric
-            self.value = value
-        }
-    }
-
     /// A structured label to categorize and route diagnostic information.
     public struct Context: Hashable, Sendable, CustomStringConvertible {
         /// The 4-character uppercase label for this context (e.g. GENL).
         public let label: String
 
         /// Initializes a new context from a label string.
-        /// - Parameter label: The label (will be uppercased).
+        /// - Parameter label: The label (will be uppercased and clamped/padded to 4 chars).
         public init(_ label: String) {
-            self.label = label.uppercased()
+            let upper = label.uppercased().trimmingCharacters(in: .whitespacesAndNewlines)
+            if upper.count > 4 {
+                self.label = String(upper.prefix(4))
+            } else if upper.count < 4 {
+                self.label = upper.padding(toLength: 4, withPad: " ", startingAt: 0)
+            } else {
+                self.label = upper
+            }
         }
 
         public var description: String { label }
         public var rawValue: String { label }
 
         /// A stable numerical identifier derived from the label hash (0.0 to 10.0).
-        /// Used as feature input for neural governance models.
+        /// Used as feature input for system classification models.
         var id: Double {
             let hash = abs(label.hashValue)
             return Double(hash % 100) / 10.0

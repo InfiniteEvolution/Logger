@@ -17,7 +17,7 @@ public struct LogTask: Sendable {
         case failure(String)
         /// Task completed with partial success or data.
         case partial(String)
-        /// Task was explicitly interrupted by autonomous governance.
+        /// Task was explicitly interrupted by system intervention.
         case interrupted
     }
 
@@ -62,12 +62,8 @@ public struct LogTask: Sendable {
         let taskId = self.id
         let startTime = self.start
         Task {
-            do {
-                try await logger.startTask(id: taskId, name: name, context: context, timestamp: startTime)
-                logger.log("Task [\(name)] started", context: context, level: 1)
-            } catch let startError {
-                logger.log("[BLOCKED] Task [\(name)]: \(startError)", context: context, level: 3, isError: true)
-            }
+            await logger.startTask(id: taskId, name: name, context: context, timestamp: startTime)
+            logger.log("Task [\(name)] started", context: context, level: 1)
         }
     }
 

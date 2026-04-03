@@ -30,31 +30,34 @@ public enum Log {
     }
 }
 
-/// Stub implementation for testing
+/// Stub implementation for testing.
+///
+/// Uses the caller's context label in console output to maintain
+/// format compliance: `Time | Context<4 Char> | #LEVEL | Message`.
 public struct LoggerProxyStub: LoggerProxy {
     public init() {}
-    
+
     public var storageURL: URL? { nil }
-    
-    private func stubLog(_ message: String, tag: String = "#WARNING") {
-        print(Logger.Entry.formatConsoleLine(timestamp: Date(), tag: tag, label: "LPRX", message: message))
+
+    private func stubLog(_ message: String, context: Logger.Context, tag: String = "#WARNING") {
+        print(Logger.Entry.formatConsoleLine(timestamp: Date(), tag: tag, label: context.label, message: message))
     }
     public func log(_ message: String, context: Logger.Context, level: LogLevel) {
-        stubLog("log() called. Message: \(message)", tag: level.tag)
+        stubLog(message, context: context, tag: level.tag)
     }
     public func debug(_ message: String, context: Logger.Context) {
-        stubLog(message, tag: "#DEBUG")
+        stubLog(message, context: context, tag: "#DEBUG")
     }
     public func info(_ message: String, context: Logger.Context) {
-        stubLog(message, tag: "#INFO")
+        stubLog(message, context: context, tag: "#INFO")
     }
     public func warning(_ message: String, context: Logger.Context) {
-        stubLog(message, tag: "#WARNING")
+        stubLog(message, context: context, tag: "#WARNING")
     }
     public func error(_ message: String, context: Logger.Context) {
-        stubLog(message, tag: "#ERROR")
+        stubLog(message, context: context, tag: "#ERROR")
     }
     public func critical(_ message: String, context: Logger.Context) {
-        stubLog(message, tag: "#CRITICAL")
+        stubLog(message, context: context, tag: "#CRITICAL")
     }
 }

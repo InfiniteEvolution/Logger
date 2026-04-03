@@ -30,7 +30,7 @@ public final actor LogStorage: Sendable {
         let fileManager = FileManager.default
         let libraryDir = fileManager.urls(for: .libraryDirectory, in: .userDomainMask).first!
         let logsDir = libraryDir.appendingPathComponent("Logs", isDirectory: true)
-        return logsDir.appendingPathComponent("system_diagnostics.txt")
+        return logsDir.appendingPathComponent("system_diagnostics.csv")
     }
 
     /// Returns the standard shared URL for diagnostic logs.
@@ -42,7 +42,7 @@ public final actor LogStorage: Sendable {
     public static var defaultSharedURL: URL {
         let fileManager = FileManager.default
         let documentsDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-        return documentsDir.appendingPathComponent("system_diagnostics.txt")
+        return documentsDir.appendingPathComponent("system_diagnostics.csv")
     }
 
     /// Initializes a new LogStorage with the target file URL.
